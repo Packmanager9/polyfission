@@ -1475,7 +1475,7 @@ window.addEventListener('DOMContentLoaded', (event) => {
                     }
                 }
 
-                if(i > 0){
+                if (i > 0) {
                     this.target = cells[i]
                     this.tosend = this.pop * .5
                     this.sending = 1
@@ -1518,7 +1518,7 @@ window.addEventListener('DOMContentLoaded', (event) => {
 
 
     class Scale {
-        constructor(){
+        constructor() {
             this.fulcrum = new Circle(640, 360, 1, "red")
             this.balls = []
             this.hand1 = new Circle(340, 550, 30, "#00ff00")
@@ -1530,7 +1530,7 @@ window.addEventListener('DOMContentLoaded', (event) => {
             this.arm = castBetween(this.shoulder1, this.shoulder2, 600, 10)
             this.line = new LineOP(this.shoulder1, this.shoulder2, "red", 2)
         }
-        draw(){
+        draw() {
             this.hand1.radius = this.hand1.weight
             this.hand2.radius = this.hand2.weight
             this.hand1.draw()
@@ -1538,12 +1538,12 @@ window.addEventListener('DOMContentLoaded', (event) => {
             this.fulcrum.draw()
             // this.arm.draw()
             this.line.object = this.arm.shapes[0]
-            this.line.target = this.arm.shapes[ this.arm.shapes.length-1]
+            this.line.target = this.arm.shapes[this.arm.shapes.length - 1]
             this.line.draw()
             let j = 0
-            while(this.arm.doesPerimeterTouch(this.fulcrum)){
+            while (this.arm.doesPerimeterTouch(this.fulcrum)) {
                 j++
-                if(j > 100){
+                if (j > 100) {
                     break
                 }
                 let angle = (new LineOP(this.fulcrum, this.arm.shapes[0])).angle()
@@ -1551,31 +1551,31 @@ window.addEventListener('DOMContentLoaded', (event) => {
                 this.arm.adjustByFromDisplacement(Math.sin(angle), Math.cos(angle))
                 this.arm.adjustByToDisplacement(Math.sin(angle), Math.cos(angle))
             }
-            while(this.line.hypotenuse() > 600){
+            while (this.line.hypotenuse() > 600) {
                 j++
-                if(j > 100){
+                if (j > 100) {
                     break
                 }
-                let angle = (new LineOP(this.arms.shapes[this.arm.shapes.length-1], this.arm.shapes[0])).angle()
+                let angle = (new LineOP(this.arms.shapes[this.arm.shapes.length - 1], this.arm.shapes[0])).angle()
 
                 this.arm.adjustByFromDisplacement(Math.cos(angle), Math.sin(angle))
                 this.arm.adjustByToDisplacement(-Math.cos(angle), -Math.sin(angle))
             }
 
-            
+
 
 
             this.arm.adjustByFromDisplacement(0, this.hand1.weight)
             this.arm.adjustByToDisplacement(0, this.hand2.weight)
-            if(keysPressed['w']){
-                this.hand1.weight*=4
+            if (keysPressed['w']) {
+                this.hand1.weight *= 4
             }
-            if(keysPressed['s']){
-                this.hand2.weight*=1.01
+            if (keysPressed['s']) {
+                this.hand2.weight *= 1.01
             }
 
 
-            for(let t = 0;t<this.balls.length;t++){
+            for (let t = 0; t < this.balls.length; t++) {
                 this.balls[t].move()
                 this.balls[t].draw()
             }
@@ -1594,94 +1594,133 @@ window.addEventListener('DOMContentLoaded', (event) => {
     let airdot = new Image()
     airdot.src = "airdot.png"
     class Rings {
-        constructor(l){
+        constructor(l) {
             this.index = 0
             this.rings = []
             this.globaldots = []
             this.globallines = []
             this.l = l
             let j = 0
-            for(let t = 0;t<l;t++){
-                let ring = new Circle(640, 360, (100/(l/3))+(t*(100/(l/3))), "white")
+
+            this.maxscore = 0
+            for (let t = 0; t < l; t++) {
+                let ring = new Circle(640, 360, (100 / (l / 3)) + (t * (100 / (l / 3))), "white")
                 ring.angle = 0
                 ring.dots = []
-                for(let k = 0;k<Math.min((t+3), 3);k++){
-                    let dot = new Circle(0,0, 16, "white")
-                    dot.type =  j%3//Math.floor(Math.random()*3)
+                for (let k = 0; k < Math.min((t + 4), 41); k++) {
+                    let dot = new Circle(0, 0, 16, "white")
+                    dot.type = j % 3//Math.floor(Math.random()*3)
                     dot.type2 = k
-                    if(dot.type == 0){
+                    if (dot.type == 0) {
                         dot.color = "blue"
                         dot.type2 = 0
                     }
-                    if(dot.type == 1){
+                    if (dot.type == 1) {
                         dot.color = "red"
                         dot.type2 = 2
                     }
-                    if(dot.type == 2){
+                    if (dot.type == 2) {
                         dot.color = "yellow"
                         dot.type2 = 0
                     }
-                    if(dot.type == 3){
+                    if (dot.type == 3) {
                         dot.color = "green"
                         dot.type2 = 1
                     }
-                    dot.angle = Math.random()*Math.PI*2
+                    dot.angle = Math.random() * Math.PI * 2
                     ring.dots.push(dot)
                     this.globaldots.push(dot)
                     j++
                 }
                 this.rings.push(ring)
-                for(let t = 0;t<this.globaldots.length;t++){
-                    for(let k = 0;k<this.globaldots.length;k++){
-                        if(t!=k){
-                            if(this.globaldots[t].type == this.globaldots[k].type || ((this.globaldots[t].type2 == 1 && this.globaldots[k].type2 == 0) || (this.globaldots[t].type2 == 0 && this.globaldots[k].type2 == 1)) ){
+                let pairs = []
+                for (let t = 0; t < this.globaldots.length; t++) {
+                    for (let k = t; k < this.globaldots.length; k++) {
+                        if (t != k) {
+                            if (this.globaldots[t].type == this.globaldots[k].type || ((this.globaldots[t].type2 == 1 && this.globaldots[k].type2 == 0) || (this.globaldots[t].type2 == 0 && this.globaldots[k].type2 == 1))) {
                                 let link = new LineOP(this.globaldots[t], this.globaldots[k], this.globaldots[t].color, 1)
+                                link.pulse = Math.random() * 1000
+                                // pairs.push([t,k])
+                                // if(!(pairs.includes([t,k])||pairs.includes([k,t]))){
+
                                 this.globallines.push(link)
+                                // }
                             }
                         }
                     }
                 }
             }
         }
-        draw(){
-            if(keysPressed['w']){
+        solve() {
+            let step = (Math.PI * 2) / 180
+            this.maxscore = 0
+            for (let r = 0; r < this.rings.length*2; r++) {
+                this.a =  this.rings[r%this.rings.length].angle 
+                this.rings[r%this.rings.length].angle 
+                for (let p = 0; p < 180; p++) {
+                    this.rings[r%this.rings.length].angle += step
+                    this.score = 0
+                    for (let t = 0; t < this.rings.length; t++) {
+                        for (let k = 0; k < this.rings[t].dots.length; k++) {
+                            this.rings[t].dots[k].x = (Math.cos(this.rings[t].angle + this.rings[t].dots[k].angle) * this.rings[t].radius) + this.rings[t].x
+                            this.rings[t].dots[k].y = (Math.sin(this.rings[t].angle + this.rings[t].dots[k].angle) * this.rings[t].radius) + this.rings[t].y
+                        }
+                    }
+                    for (let t = 0; t < this.globallines.length; t++) {
+                        if (this.globallines[t].hypotenuse() < (120 / this.l) * 6) {
+                            let k = ((120 / this.l) * 6)
+                            this.globallines[t].width = ((((k - this.globallines[t].hypotenuse()) / 120) / this.l) * 4) + .5
+                            this.score += this.globallines[t].width * 5
+                        }
+                    }
+                    if (this.score >= this.maxscore) {
+                        this.maxscore = this.score
+                        this.a = this.rings[r%this.rings.length].angle
+                    }
+                }
+                this.rings[r%this.rings.length].angle = this.a
+            }
+
+        }
+        draw() {
+            if (keysPressed['w']) {
                 keysPressed['w'] = false
                 this.index++
-                if(this.index == this.rings.length){
+                if (this.index == this.rings.length) {
                     this.index = 0
                 }
             }
-            if(keysPressed['s']){
+            if (keysPressed['s']) {
                 this.index--
-                if(this.index == -1){
-                    this.index = this.rings.length-1
+                if (this.index == -1) {
+                    this.index = this.rings.length - 1
                 }
                 keysPressed['s'] = false
             }
-            for(let t = 0;t<this.rings.length;t++){
-                if(this.index == t){
+            for (let t = 0; t < this.rings.length; t++) {
+                if (this.index == t) {
                     this.rings[t].color = "white"
-                    if(keysPressed['a']){
-                        this.rings[t].angle-=.021
+                    if (keysPressed['a']) {
+                        this.rings[t].angle -= .021
                     }
-                    if(keysPressed['d']){
-                        this.rings[t].angle+=.021
+                    if (keysPressed['d']) {
+                        this.rings[t].angle += .021
                     }
-                    if(keysPressed['q']){
-                        this.rings[t].angle-=.0051
+                    if (keysPressed['q']) {
+                        this.rings[t].angle -= .0051
                     }
-                    if(keysPressed['e']){
-                        this.rings[t].angle+=.0051
+                    if (keysPressed['e']) {
+                        this.rings[t].angle += .0051
                     }
-                }else{
+                } else {
                     this.rings[t].color = "gray"
                 }
                 this.rings[t].draw()
-                for(let k = 0;k<this.rings[t].dots.length;k++){
-                    this.rings[t].dots[k].x = (Math.cos(this.rings[t].angle + this.rings[t].dots[k].angle)*this.rings[t].radius)+this.rings[t].x
-                    this.rings[t].dots[k].y = (Math.sin(this.rings[t].angle + this.rings[t].dots[k].angle)*this.rings[t].radius)+this.rings[t].y
-                    
-                    this.rings[t].dots[k].radius = 48/this.l
+                for (let k = 0; k < this.rings[t].dots.length; k++) {
+                    this.rings[t].dots[k].x = (Math.cos(this.rings[t].angle + this.rings[t].dots[k].angle) * this.rings[t].radius) + this.rings[t].x
+                    this.rings[t].dots[k].y = (Math.sin(this.rings[t].angle + this.rings[t].dots[k].angle) * this.rings[t].radius) + this.rings[t].y
+
+                    this.rings[t].dots[k].radius = 48 / this.l
                     this.rings[t].dots[k].draw()
                     // if(this.rings[t].dots[k].type == 0){
                     //     canvas_context.drawImage(waterdot, 0,0,32,32, this.rings[t].dots[k].x-(this.rings[t].dots[k].radius*.5),  this.rings[t].dots[k].y-(this.rings[t].dots[k].radius*.5), this.rings[t].dots[k].radius*2,this.rings[t].dots[k].radius*2)
@@ -1700,48 +1739,51 @@ window.addEventListener('DOMContentLoaded', (event) => {
                 }
             }
             this.score = 0
-            for(let t = 0;t<this.globallines.length;t++){
+            for (let t = 0; t < this.globallines.length; t++) {
                 let wet = 0
-                if(this.globallines[t].hypotenuse() < (110/this.l)*6){
-                    this.globallines[t].width = 2/this.l
+                if (this.globallines[t].hypotenuse() < (120 / this.l) * 6) {
+                    let k = ((120 / this.l) * 6)
+                    this.globallines[t].width = ((((k - this.globallines[t].hypotenuse()) / 120) / this.l) * 4) + .5
                     wet = 1
                 }
                 // if(this.globallines[t].hypotenuse() < 150){
                 //     this.globallines[t].width = 2
+                // }p
+                // if(this.globallines[t].hypotenuse() < (100/this.l)*6){
+                //     this.globallines[t].width = 3/this.l
                 // }
-                if(this.globallines[t].hypotenuse() < (100/this.l)*6){
-                    this.globallines[t].width = 3/this.l
-                }
-                if(this.globallines[t].hypotenuse() < (80/this.l)*6){
-                    this.globallines[t].width = 4/this.l
-                }
-                if(this.globallines[t].hypotenuse() < (60/this.l)*6){
-                    this.globallines[t].width = 5/this.l
-                }
-                if(wet == 1){
-                    this.score += this.globallines[t].width*2*this.l
+                // if(this.globallines[t].hypotenuse() < (80/this.l)*6){
+                //     this.globallines[t].width = 4/this.l
+                // }
+                // if(this.globallines[t].hypotenuse() < (60/this.l)*6){
+                //     this.globallines[t].width = 5/this.l
+                // }
+                if (wet == 1) {
+                    this.score += this.globallines[t].width * 5//*this.l
+                    this.globallines[t].pulse += this.globallines[t].width
+                    this.globallines[t].width += Math.abs(Math.cos(this.globallines[t].pulse / 40)) * this.globallines[t].width * 1
                     this.globallines[t].draw()
                 }
             }
 
 
-            for(let t = 0;t<this.rings.length;t++){
-                for(let k = 0;k<this.rings[t].dots.length;k++){
-            // if(this.rings[t].dots[k].type == 0){
-            //     canvas_context.drawImage(waterdot, 0,0,32,32, this.rings[t].dots[k].x-(this.rings[t].dots[k].radius*.5),  this.rings[t].dots[k].y-(this.rings[t].dots[k].radius*.5), this.rings[t].dots[k].radius*2,this.rings[t].dots[k].radius*2)
-            // }
-            // if(this.rings[t].dots[k].type == 1){
-            //     canvas_context.drawImage(firedot, 0,0,32,32, this.rings[t].dots[k].x-(this.rings[t].dots[k].radius*.5),  this.rings[t].dots[k].y-(this.rings[t].dots[k].radius*.5), this.rings[t].dots[k].radius*2,this.rings[t].dots[k].radius*2)
-            // }
-            // if(this.rings[t].dots[k].type == 2){
-            //     canvas_context.drawImage(airdot, 0,0,32,32, this.rings[t].dots[k].x-(this.rings[t].dots[k].radius*.5),  this.rings[t].dots[k].y-(this.rings[t].dots[k].radius*.5), this.rings[t].dots[k].radius*2,this.rings[t].dots[k].radius*2)
-            // }
-        }
-    }
+            for (let t = 0; t < this.rings.length; t++) {
+                for (let k = 0; k < this.rings[t].dots.length; k++) {
+                    // if(this.rings[t].dots[k].type == 0){
+                    //     canvas_context.drawImage(waterdot, 0,0,32,32, this.rings[t].dots[k].x-(this.rings[t].dots[k].radius*.5),  this.rings[t].dots[k].y-(this.rings[t].dots[k].radius*.5), this.rings[t].dots[k].radius*2,this.rings[t].dots[k].radius*2)
+                    // }
+                    // if(this.rings[t].dots[k].type == 1){
+                    //     canvas_context.drawImage(firedot, 0,0,32,32, this.rings[t].dots[k].x-(this.rings[t].dots[k].radius*.5),  this.rings[t].dots[k].y-(this.rings[t].dots[k].radius*.5), this.rings[t].dots[k].radius*2,this.rings[t].dots[k].radius*2)
+                    // }
+                    // if(this.rings[t].dots[k].type == 2){
+                    //     canvas_context.drawImage(airdot, 0,0,32,32, this.rings[t].dots[k].x-(this.rings[t].dots[k].radius*.5),  this.rings[t].dots[k].y-(this.rings[t].dots[k].radius*.5), this.rings[t].dots[k].radius*2,this.rings[t].dots[k].radius*2)
+                    // }
+                }
+            }
 
             canvas_context.font = "20px comic sans ms"
             canvas_context.fillStyle = "white"
-            canvas_context.fillText(this.score, 40,40)
+            canvas_context.fillText(Math.round(this.score), 40, 40)
         }
     }
     let l = 3
@@ -1753,7 +1795,7 @@ window.addEventListener('DOMContentLoaded', (event) => {
         gamepadAPI.update() //checks for button presses/stick movement on the connected controller)
         tree.draw()
 
-        if(keysPressed['g']){
+        if (keysPressed['g']) {
             l++
             tree = new Rings(l)
             keysPressed['g'] = false
@@ -1769,6 +1811,9 @@ window.addEventListener('DOMContentLoaded', (event) => {
         // rightman.ai()
 
         // scale.draw()
+        if(keysPressed['x']){
+            tree.solve()
+        }
 
         if (keysPressed['-'] && recording == 0) {
             recording = 1
